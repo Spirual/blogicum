@@ -1,10 +1,11 @@
 from django.contrib.auth import get_user_model
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
 from blog.models import Post, Category
 
-POSTS_ON_MAIN_PAGE = 5
+POSTS_ON_MAIN_PAGE = 10
 
 User = get_user_model()
 
@@ -23,8 +24,11 @@ def get_post_base():
 
 def index(request):
     template = 'blog/index.html'
-    post_list = get_post_base()[:POSTS_ON_MAIN_PAGE]
-    context = {'page_obj': post_list}
+    posts = get_post_base()
+    paginator = Paginator(posts, POSTS_ON_MAIN_PAGE)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {'page_obj': page_obj}
     return render(request, template, context)
 
 
@@ -34,11 +38,14 @@ def profile(request, username):
         User,
         username=username,
     )
-    post_list = Post.objects.filter(
+    posts = get_post_base().filter(
         author=profile,
     )
+    paginator = Paginator(posts, POSTS_ON_MAIN_PAGE)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
-        'page_obj': post_list,
+        'page_obj': page_obj,
         'profile': profile,
     }
     return render(request, template, context)
@@ -61,9 +68,12 @@ def category_posts(request, category_slug):
         slug=category_slug,
         is_published=True,
     )
-    post_list = get_post_base().filter(category=category)
+    posts = get_post_base().filter(category=category)
+    paginator = Paginator(posts, POSTS_ON_MAIN_PAGE)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
         'category': category,
-        'post_list': post_list,
+        'page_obj': page_obj,
     }
     return render(request, template, context)
