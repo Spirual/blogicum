@@ -1,9 +1,13 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
+from django.views.generic import CreateView
+from django.urls import reverse_lazy
 
 from blog.models import Post, Category
+from blog.forms import PostForm
 
 POSTS_ON_MAIN_PAGE = 10
 
@@ -77,3 +81,24 @@ def category_posts(request, category_slug):
         'page_obj': page_obj,
     }
     return render(request, template, context)
+
+
+@login_required
+def create_post(request, pk=None):
+    author = request.user
+    if pk is not None:
+        instance = get_object_or_404(Post, pk=pk)
+    else:
+        instance = None
+    form = PostForm(
+        request.POST or None,
+        files=request.FILES or None,
+        instance=instance,
+    )
+    context = {'form': form}
+    if form.is_valid():
+        post = form.save(commit=False)
+        post.author = author
+        post.save()
+        return redirect('blog:profile', username=author.username)
+    return render(request, 'blog/create.html', context)
