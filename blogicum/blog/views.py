@@ -7,7 +7,7 @@ from django.views.generic import CreateView
 from django.urls import reverse_lazy
 
 from blog.models import Post, Category
-from blog.forms import PostForm
+from blog.forms import PostForm, UserForm
 
 POSTS_ON_MAIN_PAGE = 10
 
@@ -102,3 +102,10 @@ def create_post(request, pk=None):
         post.save()
         return redirect('blog:profile', username=author.username)
     return render(request, 'blog/create.html', context)
+
+
+@login_required
+def edit_profile(request):
+    form = UserForm()
+    context = {'form': form}
+    return render(request, 'blog/user.html', context)
