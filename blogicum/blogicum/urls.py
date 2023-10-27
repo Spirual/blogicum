@@ -12,3 +12,6 @@ if settings.DEBUG:
     import debug_toolbar
 
     urlpatterns += (path('__debug__/', include(debug_toolbar.urls)),)
+
+handler404 = 'pages.views.custom_pages_404'
+handler500 = 'pages.views.custom_pages_500'
