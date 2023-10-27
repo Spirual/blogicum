@@ -133,3 +133,5 @@ INTERNAL_IPS = [
 ]
 
 CSRF_FAILURE_VIEW = 'pages.views.csrf_failure'
+
+MEDIA_ROOT = BASE_DIR / 'media'
