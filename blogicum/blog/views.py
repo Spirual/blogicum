@@ -1,9 +1,12 @@
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
 from blog.models import Post, Category
 
 POSTS_ON_MAIN_PAGE = 5
+
+User = get_user_model()
 
 
 def get_post_base():
@@ -21,7 +24,23 @@ def get_post_base():
 def index(request):
     template = 'blog/index.html'
     post_list = get_post_base()[:POSTS_ON_MAIN_PAGE]
-    context = {'post_list': post_list}
+    context = {'page_obj': post_list}
+    return render(request, template, context)
+
+
+def profile(request, username):
+    template = 'blog/profile.html'
+    profile = get_object_or_404(
+        User,
+        username=username,
+    )
+    post_list = Post.objects.filter(
+        author=profile,
+    )
+    context = {
+        'page_obj': post_list,
+        'profile': profile,
+    }
     return render(request, template, context)
 
 
