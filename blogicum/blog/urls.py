@@ -25,7 +25,7 @@ urlpatterns = [
     ),
     path(
         'posts/<int:post_pk>/delete_comment/<int:comment_pk>/',
-         TemplateView.as_view(),
+         views.delete_comment,
          name='delete_comment',
     ),
     path(

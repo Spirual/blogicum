@@ -155,3 +155,14 @@ def edit_comment(request, post_pk, comment_pk):
         return redirect('blog:post_detail', pk=post_pk)
     context = {'form': form, 'comment': instance}
     return render(request, 'blog/comment.html', context)
+
+
+@login_required
+def delete_comment(request, post_pk, comment_pk):
+    instance = get_object_or_404(Comments, pk=comment_pk)
+    form = CommentsForm(instance=instance)
+    context = {'form': form}
+    if request.method == 'POST':
+        instance.delete()
+        return redirect('blog:post_detail', pk=post_pk)
+    return render(request, 'blog/comment.html', context)
