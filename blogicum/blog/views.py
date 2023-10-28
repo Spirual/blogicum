@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
 
-from blog.models import Post, Category
+from blog.models import Post, Category, Comments
 from blog.forms import PostForm, UserForm, CommentsForm
 
 POSTS_ON_MAIN_PAGE = 10
@@ -109,6 +109,10 @@ def create_post(request, pk=None):
     return render(request, 'blog/create.html', context)
 
 
+
+
+
+
 @login_required
 def edit_profile(request):
     form = UserForm()
@@ -118,7 +122,7 @@ def edit_profile(request):
 
 @login_required
 def add_comment(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+    post = get_object_or_404(get_post_base(), pk=pk)
     form = CommentsForm(request.POST)
     if form.is_valid():
         comment = form.save(commit=False)
@@ -126,3 +130,18 @@ def add_comment(request, pk):
         comment.post = post
         comment.save()
     return redirect('blog:post_detail', pk=pk)
+
+
+@login_required
+def edit_comment(request, post_pk, comment_pk):
+    post = get_object_or_404(Post, pk=post_pk)
+    instance = get_object_or_404(Comments, pk=comment_pk)
+    form = CommentsForm(request.POST or None, instance=instance)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.author = request.user
+        comment.post = post
+        comment.save()
+        return redirect('blog:post_detail', pk=post_pk)
+    context = {'form': form, 'comment': instance}
+    return render(request, 'blog/comment.html', context)
