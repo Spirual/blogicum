@@ -4,11 +4,9 @@ from django.core.paginator import Paginator
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
-from django.views.generic import CreateView
-from django.urls import reverse_lazy
 
-from blog.models import Post, Category, Comments
 from blog.forms import PostForm, UserForm, CommentsForm
+from blog.models import Post, Category, Comments
 
 POSTS_ON_MAIN_PAGE = 10
 
@@ -45,9 +43,15 @@ def profile(request, username):
         User,
         username=username,
     )
-    posts = get_post_base().filter(
+    posts = Post.objects.filter(
         author=profile,
-    )
+    ).select_related(
+        'location',
+        'category',
+        'author',
+    ).annotate(
+        comment_count=Count('comments'),
+    ).order_by('-pub_date')
     paginator = Paginator(posts, POSTS_ON_MAIN_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -61,9 +65,14 @@ def profile(request, username):
 def post_detail(request, pk):
     template = 'blog/detail.html'
     post = get_object_or_404(
-        get_post_base(),
+        Post,
         pk=pk,
     )
+    if post.author != request.user:
+        post = get_object_or_404(
+            get_post_base(),
+            pk=pk,
+        )
     form = CommentsForm(request.POST or None)
     context = {
         'post': post,
@@ -125,8 +134,11 @@ def delete_post(request, pk):
 
 @login_required
 def edit_profile(request):
-    form = UserForm()
+    form = UserForm(request.POST or None, instance=request.user)
     context = {'form': form}
+    if form.is_valid():
+        form.save()
+        return redirect('blog:profile', request.user.username)
     return render(request, 'blog/user.html', context)
 
 
