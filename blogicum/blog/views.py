@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db.models import Count
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.views.generic import CreateView
@@ -23,7 +24,9 @@ def get_post_base():
         'location',
         'category',
         'author',
-    )
+    ).annotate(
+        comment_count=Count('comments'),
+    ).order_by('-pub_date')
 
 
 def index(request):
@@ -109,8 +112,15 @@ def create_post(request, pk=None):
     return render(request, 'blog/create.html', context)
 
 
-
-
+@login_required
+def delete_post(request, pk):
+    instance = get_object_or_404(Post, pk=pk)
+    form = PostForm(instance=instance)
+    context = {'form': form}
+    if request.method == 'POST':
+        instance.delete()
+        return redirect('blog:profile', request.user.username)
+    return render(request, 'blog/create.html', context)
 
 
 @login_required
