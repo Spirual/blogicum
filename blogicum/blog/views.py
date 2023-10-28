@@ -7,7 +7,7 @@ from django.views.generic import CreateView
 from django.urls import reverse_lazy
 
 from blog.models import Post, Category
-from blog.forms import PostForm, UserForm
+from blog.forms import PostForm, UserForm, CommentsForm
 
 POSTS_ON_MAIN_PAGE = 10
 
@@ -55,13 +55,18 @@ def profile(request, username):
     return render(request, template, context)
 
 
-def post_detail(request, id):
+def post_detail(request, pk):
     template = 'blog/detail.html'
     post = get_object_or_404(
         get_post_base(),
-        pk=id,
+        pk=pk,
     )
-    context = {'post': post}
+    form = CommentsForm(request.POST or None)
+    context = {
+        'post': post,
+        'form': form,
+        'comments': post.comments.all(),
+    }
     return render(request, template, context)
 
 
@@ -109,3 +114,15 @@ def edit_profile(request):
     form = UserForm()
     context = {'form': form}
     return render(request, 'blog/user.html', context)
+
+
+@login_required
+def add_comment(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    form = CommentsForm(request.POST)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.author = request.user
+        comment.post = post
+        comment.save()
+    return redirect('blog:post_detail', pk=pk)
