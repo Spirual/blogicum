@@ -23,8 +23,8 @@ class BaseModel(models.Model):
 
 class Location(BaseModel):
     name = models.CharField(
-        max_length=MAX_LENGTH,
-        verbose_name='Название места')
+        max_length=MAX_LENGTH, verbose_name='Название места'
+    )
 
     class Meta:
         verbose_name = 'местоположение'

@@ -14,17 +14,22 @@ User = get_user_model()
 
 
 def get_post_base():
-    return Post.objects.filter(
-        is_published=True,
-        pub_date__lte=timezone.now(),
-        category__is_published=True,
-    ).select_related(
-        'location',
-        'category',
-        'author',
-    ).annotate(
-        comment_count=Count('comments'),
-    ).order_by('-pub_date')
+    return (
+        Post.objects.filter(
+            is_published=True,
+            pub_date__lte=timezone.now(),
+            category__is_published=True,
+        )
+        .select_related(
+            'location',
+            'category',
+            'author',
+        )
+        .annotate(
+            comment_count=Count('comments'),
+        )
+        .order_by('-pub_date')
+    )
 
 
 def index(request):
@@ -43,15 +48,20 @@ def profile(request, username):
         User,
         username=username,
     )
-    posts = Post.objects.filter(
-        author=profile,
-    ).select_related(
-        'location',
-        'category',
-        'author',
-    ).annotate(
-        comment_count=Count('comments'),
-    ).order_by('-pub_date')
+    posts = (
+        Post.objects.filter(
+            author=profile,
+        )
+        .select_related(
+            'location',
+            'category',
+            'author',
+        )
+        .annotate(
+            comment_count=Count('comments'),
+        )
+        .order_by('-pub_date')
+    )
     paginator = Paginator(posts, POSTS_ON_MAIN_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)

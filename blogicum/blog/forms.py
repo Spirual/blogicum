@@ -7,7 +7,6 @@ User = get_user_model()
 
 
 class PostForm(forms.ModelForm):
-
     class Meta:
         model = Post
         exclude = ('author', 'is_published')
@@ -21,14 +20,12 @@ class PostForm(forms.ModelForm):
 
 
 class UserForm(forms.ModelForm):
-
     class Meta:
         model = User
         fields = 'username', 'first_name', 'last_name', 'email'
 
 
 class CommentsForm(forms.ModelForm):
-
     class Meta:
         model = Comments
         fields = ('text',)
