@@ -10,3 +10,9 @@ exclude = '''
   | templates
 )/
 '''
+
+[tool.isort]
+profile = "black"
+known_third_party = [
+    "django",
+]

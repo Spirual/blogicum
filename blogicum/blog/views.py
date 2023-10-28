@@ -2,11 +2,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Count
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from blog.forms import PostForm, UserForm, CommentsForm
-from blog.models import Post, Category, Comments
+from blog.forms import CommentsForm, PostForm, UserForm
+from blog.models import Category, Comments, Post
 
 POSTS_ON_MAIN_PAGE = 10
 
