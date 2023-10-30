@@ -95,8 +95,7 @@ class ProfileEditUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy(
-            'blog:profile',
-            kwargs={'username': self.request.user.username}
+            'blog:profile', kwargs={'username': self.request.user.username}
         )
 
 
@@ -166,8 +165,7 @@ class EditPostView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy(
-            'blog:post_detail',
-            kwargs={'pk': self.kwargs['pk']}
+            'blog:post_detail', kwargs={'pk': self.kwargs['pk']}
         )
 
 
@@ -184,8 +182,7 @@ class DeletePostView(LoginRequiredMixin, DeleteView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = PostForm(
-            instance=self.object)
+        context['form'] = PostForm(instance=self.object)
         return context
 
     def get_success_url(self):
@@ -226,10 +223,8 @@ class CommentMixinView(LoginRequiredMixin, View):
 
 
 class CommentUpdateView(CommentMixinView, UpdateView):
-
     form_class = CommentsForm
 
 
 class CommentDeleteView(CommentMixinView, DeleteView):
-
     pass
