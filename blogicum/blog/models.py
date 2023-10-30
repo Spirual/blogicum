@@ -2,8 +2,8 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 User = get_user_model()
-MAX_LENGTH = 256
-MAX_LENGTH_NAME = 20
+MAX_TITLE_LENGTH = MAX_NAME_LENGTH = 256
+MAX_LENGTH = 20
 
 
 class BaseModel(models.Model):
@@ -23,7 +23,7 @@ class BaseModel(models.Model):
 
 class Location(BaseModel):
     name = models.CharField(
-        max_length=MAX_LENGTH, verbose_name='Название места'
+        max_length=MAX_NAME_LENGTH, verbose_name='Название места'
     )
 
     class Meta:
@@ -32,14 +32,14 @@ class Location(BaseModel):
 
     def __str__(self):
         return (
-            self.name[:MAX_LENGTH_NAME]
-            if len(self.name) > MAX_LENGTH_NAME
+            self.name[:MAX_LENGTH]
+            if len(self.name) > MAX_LENGTH
             else self.name
         )
 
 
 class Category(BaseModel):
-    title = models.CharField(max_length=MAX_LENGTH, verbose_name='Заголовок')
+    title = models.CharField(max_length=MAX_TITLE_LENGTH, verbose_name='Заголовок')
     description = models.TextField(verbose_name='Описание')
     slug = models.SlugField(
         unique=True,
@@ -54,14 +54,14 @@ class Category(BaseModel):
 
     def __str__(self):
         return (
-            self.title[:MAX_LENGTH_NAME]
-            if len(self.title) > MAX_LENGTH_NAME
+            self.title[:MAX_LENGTH]
+            if len(self.title) > MAX_LENGTH
             else self.title
         )
 
 
 class Post(BaseModel):
-    title = models.CharField(max_length=MAX_LENGTH, verbose_name='Заголовок')
+    title = models.CharField(max_length=MAX_TITLE_LENGTH, verbose_name='Заголовок')
     text = models.TextField(verbose_name='Текст')
     pub_date = models.DateTimeField(
         verbose_name='Дата и время публикации',
@@ -102,8 +102,8 @@ class Post(BaseModel):
 
     def __str__(self):
         return (
-            self.title[:MAX_LENGTH_NAME]
-            if len(self.title) > MAX_LENGTH_NAME
+            self.title[:MAX_LENGTH]
+            if len(self.title) > MAX_LENGTH
             else self.title
         )
 
@@ -116,7 +116,20 @@ class Comments(models.Model):
         related_name='comments',
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+    )
 
     class Meta:
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
         ordering = ('created_at',)
+
+    def __str__(self):
+        return (
+            self.text[:MAX_LENGTH]
+            if len(self.text) > MAX_LENGTH
+            else self.text
+        )
