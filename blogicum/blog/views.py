@@ -19,24 +19,24 @@ User = get_user_model()
 
 
 def get_post_base(filtering=True, annotate=True):
-        post = Post.objects.select_related(
-            'location',
-            'category',
-            'author',
+    post = Post.objects.select_related(
+        'location',
+        'category',
+        'author',
+    )
+
+    if filtering:
+        post = post.filter(
+            is_published=True,
+            pub_date__lte=timezone.now(),
+            category__is_published=True,
         )
 
-        if filtering:
-            post = post.filter(
-                is_published=True,
-                pub_date__lte=timezone.now(),
-                category__is_published=True,
-            )
+    if annotate:
+        post = post.annotate(comment_count=Count('comments'))
 
-        if annotate:
-            post = post.annotate(comment_count=Count('comments'))
-
-        post = post.order_by('-pub_date')
-        return post
+    post = post.order_by('-pub_date')
+    return post
 
 
 class IndexListView(ListView):
@@ -96,11 +96,13 @@ def post_detail(request, pk):
     is_category_hidden = not post.category.is_published
     is_post_in_future = post.pub_date > timezone.now()
 
-    if post.author != request.user and any([
-        is_post_hidden,
-        is_category_hidden,
-        is_post_in_future,
-    ]):
+    if post.author != request.user and any(
+        [
+            is_post_hidden,
+            is_category_hidden,
+            is_post_in_future,
+        ]
+    ):
         raise Http404()
 
     form = CommentsForm(request.POST or None)
@@ -159,7 +161,6 @@ class PostMixinView(LoginRequiredMixin, View):
 
 
 class EditPostView(PostMixinView, UpdateView):
-
     def get_success_url(self):
         return reverse_lazy(
             'blog:post_detail', kwargs={'pk': self.kwargs['pk']}
@@ -167,7 +168,6 @@ class EditPostView(PostMixinView, UpdateView):
 
 
 class DeletePostView(PostMixinView, DeleteView):
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = PostForm(instance=self.object)
@@ -196,7 +196,7 @@ class CommentMixinView(LoginRequiredMixin, View):
     pk_url_kwarg = 'comment_pk'
 
     def dispatch(self, request, *args, **kwargs):
-        if self.get_object_or_404().author != request.user:
+        if self.get_object().author != request.user:
             return redirect('blog:post_detail', pk=self.kwargs['pk'])
         return super().dispatch(request, *args, **kwargs)
 

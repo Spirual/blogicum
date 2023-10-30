@@ -7,9 +7,7 @@ app_name = 'blog'
 post_urls = [
     path('create/', views.CreatePostView.as_view(), name='create_post'),
     path('<int:pk>/', views.post_detail, name='post_detail'),
-    path(
-        '<int:pk>/edit/', views.EditPostView.as_view(), name='edit_post'
-    ),
+    path('<int:pk>/edit/', views.EditPostView.as_view(), name='edit_post'),
     path(
         '<int:pk>/delete/',
         views.DeletePostView.as_view(),

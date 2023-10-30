@@ -39,7 +39,9 @@ class Location(BaseModel):
 
 
 class Category(BaseModel):
-    title = models.CharField(max_length=MAX_TITLE_LENGTH, verbose_name='Заголовок')
+    title = models.CharField(
+        max_length=MAX_TITLE_LENGTH, verbose_name='Заголовок'
+    )
     description = models.TextField(verbose_name='Описание')
     slug = models.SlugField(
         unique=True,
@@ -61,7 +63,9 @@ class Category(BaseModel):
 
 
 class Post(BaseModel):
-    title = models.CharField(max_length=MAX_TITLE_LENGTH, verbose_name='Заголовок')
+    title = models.CharField(
+        max_length=MAX_TITLE_LENGTH, verbose_name='Заголовок'
+    )
     text = models.TextField(verbose_name='Текст')
     pub_date = models.DateTimeField(
         verbose_name='Дата и время публикации',
