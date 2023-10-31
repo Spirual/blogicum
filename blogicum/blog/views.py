@@ -18,7 +18,7 @@ POSTS_ON_PAGE = 10
 User = get_user_model()
 
 
-def get_post_base(filtering=True, annotate=True):
+def get_post_base(filtering=False, annotate=False):
     post = Post.objects.select_related(
         'location',
         'category',
@@ -33,9 +33,10 @@ def get_post_base(filtering=True, annotate=True):
         )
 
     if annotate:
-        post = post.annotate(comment_count=Count('comments'))
+        post = post.annotate(
+            comment_count=Count('comments')
+        ).order_by('-pub_date')
 
-    post = post.order_by('-pub_date')
     return post
 
 
@@ -44,21 +45,20 @@ class IndexListView(ListView):
     template_name = 'blog/index.html'
     ordering = '-pub_date'
     paginate_by = POSTS_ON_PAGE
-    queryset = get_post_base()
+    queryset = get_post_base(filtering=True, annotate=True)
 
 
 class ProfileListView(ListView):
     template_name = 'blog/profile.html'
-    context_object_name = 'page_obj'
     paginate_by = POSTS_ON_PAGE
 
     def get_queryset(self):
         username = self.kwargs.get('username')
         self.profile = get_object_or_404(User, username=username)
         if self.profile == self.request.user:
-            queryset = get_post_base(filtering=False)
+            queryset = get_post_base(annotate=True)
         else:
-            queryset = get_post_base()
+            queryset = get_post_base(filtering=True, annotate=True)
         queryset = queryset.filter(author=self.profile)
         return queryset
 
@@ -66,7 +66,7 @@ class ProfileListView(ListView):
         context = super().get_context_data(**kwargs)
         paginator = Paginator(self.get_queryset(), self.paginate_by)
         context['profile'] = self.profile
-        context['page_obj'] = paginator.get_page(self.request.GET.get('page'))
+        # context['page_obj'] = paginator.get_page(self.request.GET.get('page'))
 
         return context
 
@@ -121,7 +121,10 @@ def category_posts(request, category_slug):
         slug=category_slug,
         is_published=True,
     )
-    posts = get_post_base().filter(category=category)
+    posts = get_post_base(
+        filtering=True,
+        annotate=True
+    ).filter(category=category)
     paginator = Paginator(posts, POSTS_ON_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -180,7 +183,9 @@ class DeletePostView(PostMixinView, DeleteView):
 
 @login_required
 def add_comment(request, pk):
-    post = get_object_or_404(get_post_base(), pk=pk)
+    post = get_object_or_404(
+        get_post_base(filtering=True, annotate=True),
+        pk=pk)
     form = CommentsForm(request.POST)
     if form.is_valid():
         comment = form.save(commit=False)
