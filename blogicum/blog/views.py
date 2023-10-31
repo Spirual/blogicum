@@ -64,9 +64,7 @@ class ProfileListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        paginator = Paginator(self.get_queryset(), self.paginate_by)
         context['profile'] = self.profile
-        # context['page_obj'] = paginator.get_page(self.request.GET.get('page'))
 
         return context
 
